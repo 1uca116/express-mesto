@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const mongoose = require('mongoose');
 
 module.exports.getUsers = (req, res) => {
 
@@ -9,8 +10,7 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getUser = (req, res) => {
   const id = req.params.userId;
-  console.log(req.params)
-  User.find({_id: id})
+  User.findOne({_id: id})
     .then(user => res.send({data: user}))
     .catch((err) => {
       if (err.message === 'NotValidId') {
@@ -38,9 +38,11 @@ module.exports.createUser = (req, res) => {
 }
 
 module.exports.updateUser = (req, res) => {
-  const { name, about } = req.params.body;
+  const { name, about } = req.body;
+  const _id = req.user._id;
+  console.log(_id);
   User.findByIdAndUpdate(
-    {_id: id},
+    _id,
     { name, about },
     { new: true, runValidators: true }
   )
@@ -58,9 +60,10 @@ module.exports.updateUser = (req, res) => {
 
 
 module.exports.updateAvatar = (req, res) => {
-  const { avatar } = req.params.body;
+  const { avatar } = req.body;
+  const _id = req.user._id
   User.findByIdAndUpdate(
-    {_id: id},
+    _id,
     { avatar },
     { new: true, runValidators: true },
   )
