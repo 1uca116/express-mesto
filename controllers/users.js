@@ -1,16 +1,15 @@
 const User = require('../models/user');
-const mongoose = require('mongoose');
 
 module.exports.getUsers = (req, res) => {
 
   User.find({})
     .then(users => res.send({ data: users }))
-    .catch(err => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.getUser = (req, res) => {
-  const id = req.params.userId;
-  User.findOne({_id: id})
+  User.findById(req.params.userId)
+    .orFail(new Error('NotValidId'))
     .then(user => res.send({data: user}))
     .catch((err) => {
       if (err.message === 'NotValidId') {
@@ -27,7 +26,7 @@ module.exports.createUser = (req, res) => {
   console.log(req)
   const {name, about, avatar} = req.body;
   User.create({name, about, avatar})
-    .then(user => res.status(200).send(user))
+    .then(user => res.send({data: user}))
     .catch((err) => {
     if (err.name === 'ValidationError') {
       res.status(400).send({ message: 'Переданы некорректные данные' });
@@ -46,7 +45,8 @@ module.exports.updateUser = (req, res) => {
     { name, about },
     { new: true, runValidators: true }
   )
-    .then((user) => res.status(200).send(user))
+    .orFail(new Error('NotValidId'))
+    .then((user) => res.send({data: user}))
     .catch((err) => {
       if (err.message === 'NotValidId') {
         res.status(404).send({ message: 'Такого пользователя нет' });
@@ -67,10 +67,13 @@ module.exports.updateAvatar = (req, res) => {
     { avatar },
     { new: true, runValidators: true },
   )
-    .then((user) => res.status(200).send(user))
+    .orFail(new Error('NotValidId'))
+    .then((user) => res.send({data: user}))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else if (err.message === 'NotValidId') {
+        res.status(404).send({ message: 'Такого пользователя нет' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
