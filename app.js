@@ -4,8 +4,10 @@ const bodyParser = require('body-parser');
 const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards');
 const { celebrate, Joi } = require('celebrate');
+
 const { login, createUser } = require('./controllers/users');
 
+const auth = require('./middlewares/auth');
 
 const { PORT = 3000 } = process.env;
 
@@ -36,17 +38,9 @@ app.post('/signin', celebrate({
     password: Joi.string().required().min(8),
   }),
 }), login);
-//
-// app.use((req, res, next) => {
-//   req.user = {
-//     _id: '6068da265ed481541d93945a'
-//   };
-//
-//   next();
-// });
 
-app.use('/users', usersRouter )
-app.use('/cards', cardsRouter)
+app.use('/users', auth, usersRouter )
+app.use('/cards', auth, cardsRouter)
 
 
 app.listen(PORT, () => {
