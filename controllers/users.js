@@ -1,6 +1,10 @@
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const ConflictError = require('../errors/conflict-error');
+const NotFoundError = require('../errors/not-found-error');
+const BadRequestError = require('../errors/bad-request-error');
+const InternalError = require('../errors/internal-error');
 
 const JWT_SECRET = 'qwerty1234';
 
@@ -8,7 +12,7 @@ module.exports.getUsers = (req, res) => {
 
   User.find({})
     .then(users => res.send({data: users}))
-    .catch(() => res.status(500).send({message: 'Произошла ошибка'}));
+    .catch(() => throw new InternalError('Произошла ошибка'));
 };
 
 module.exports.getUser = (req, res) => {
@@ -17,11 +21,11 @@ module.exports.getUser = (req, res) => {
     .then(user => res.send({data: user}))
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        res.status(404).send({message: 'Такого пользователя нет'});
+        throw new NotFoundError('Такого пользователя нет');
       } else if (err.name === 'CastError') {
-        res.status(400).send({message: 'Переданы некорректные данные'});
+        throw new BadRequestError('Переданы некорректные данные');
       } else {
-        res.status(500).send({message: 'Произошла ошибка'});
+        throw new InternalError('Произошла ошибка');
       }
     });
 }
@@ -32,7 +36,7 @@ module.exports.createUser = (req, res, next) => {
   User.findOne({email})
     .then((user) => {
       if (user) {
-        res.status(409).send({message: 'Эти данные уже используются. Введите другой email'});
+        throw new ConflictError('Эти данные уже используются. Введите другой email');
       }
     })
     .catch(next);
@@ -48,9 +52,9 @@ module.exports.createUser = (req, res, next) => {
         }))
         .catch((err) => {
           if (err.name === 'ValidationError') {
-            res.status(400).send({message: 'Переданы некорректные данные'});
+            throw new BadRequestError('Переданы некорректные данные');
           } else {
-            res.status(500).send({message: 'Произошла ошибка'});
+            throw new InternalError('Произошла ошибка');
           }
         });
     })
@@ -70,11 +74,11 @@ module.exports.updateUser = (req, res) => {
     .then((user) => res.send({data: user}))
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        res.status(404).send({message: 'Такого пользователя нет'});
+        throw new NotFoundError('Такого пользователя нет');
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({message: 'Переданы некорректные данные'});
+        throw new BadRequestError('Переданы некорректные данные');
       } else {
-        res.status(500).send({message: 'Произошла ошибка'});
+        throw new InternalError('Произошла ошибка');
       }
     });
 }
@@ -92,11 +96,11 @@ module.exports.updateAvatar = (req, res) => {
     .then((user) => res.send({data: user}))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({message: 'Переданы некорректные данные'});
+        throw new BadRequestError('Переданы некорректные данные');
       } else if (err.message === 'NotValidId') {
-        res.status(404).send({message: 'Такого пользователя нет'});
+        throw new NotFoundError('Такого пользователя нет');
       } else {
-        res.status(500).send({message: 'Произошла ошибка'});
+        throw new InternalError('Произошла ошибка');
       }
     });
 };
@@ -114,9 +118,8 @@ module.exports.login = (req, res) => {
         httpOnly: true,
         sameSite: true
       })
-        .end()
+
         .status(200).send({token})
-        .send({message: 'Всё верно!'});
     })
     .catch((err) => {
       console.log(err)

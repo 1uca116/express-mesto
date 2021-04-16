@@ -6,7 +6,7 @@ const { getUsers, getUser, updateUser, updateAvatar} = require('../controllers/u
 router.get('/', getUsers)
 router.get('/:userId', celebrate({
   params: Joi.object().keys({
-    id: Joi.string().alphanum().length(24),
+    id: Joi.string().hex().length(24),
   }),
 }), getUser)
 

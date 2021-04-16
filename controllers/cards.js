@@ -1,9 +1,12 @@
 const Card = require('../models/card');
+const NotFoundError = require('../errors/not-found-error');
+const BadRequestError = require('../errors/bad-request-error');
+const InternalError = require('../errors/internal-error');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
     .then(cards => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(() => throw new InternalError('Произошла ошибка'));
 };
 
 module.exports.getCard = (req, res) => {
@@ -12,11 +15,11 @@ module.exports.getCard = (req, res) => {
     .then(card => res.send({data: card}))
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        res.status(404).send({ message: 'Такой карточки нет' });
+        throw new NotFoundError ('Такой карточки нет');
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        throw new BadRequestError('Переданы некорректные данные');
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        throw new InternalError('Произошла ошибка');
       }
     });
 }
@@ -27,9 +30,9 @@ module.exports.createCard = (req, res) => {
     .then(card => res.send({data: card}))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        throw new BadRequestError('Переданы некорректные данные');
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        throw new InternalError('Произошла ошибка');
       }
     });
 }
@@ -44,11 +47,11 @@ module.exports.deleteCard = (req, res) => {
           .then(card => res.send({data: card}))
           .catch((err) => {
             if (err.message === 'NotValidId') {
-              res.status(404).send({ message: 'Такой карточки нет' });
+              throw new NotFoundError ('Такой карточки нет');
             } else if (err.name === 'CastError') {
-              res.status(400).send({ message: 'Переданы некорректные данные' });
+              throw new BadRequestError('Переданы некорректные данные');
             } else {
-              res.status(500).send({ message: 'Произошла ошибка' });
+              throw new InternalError('Произошла ошибка');
             }
           });
       } else {
@@ -56,11 +59,11 @@ module.exports.deleteCard = (req, res) => {
       }
     }).catch((err) => {
         if (err.message === 'NotValidId') {
-          res.status(404).send({ message: 'Такой карточки нет' });
+          throw new NotFoundError ('Такой карточки нет');
         } else if (err.name === 'CastError') {
-          res.status(400).send({ message: 'Переданы некорректные данные' });
+          throw new BadRequestError('Переданы некорректные данные');
         } else {
-          res.status(500).send({ message: 'Произошла ошибка' });
+          throw new InternalError('Произошла ошибка');
         }
     })
 }
@@ -74,11 +77,11 @@ module.exports.likeCard = (req, res) => {
     .then(card => res.send({data: card}))
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        res.status(404).send({ message: 'Такой карточки нет' });
+        throw new NotFoundError ('Такой карточки нет');
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        throw new BadRequestError('Переданы некорректные данные');
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        throw new InternalError('Произошла ошибка');
       }
     });
 }
@@ -92,11 +95,11 @@ module.exports.unlikeCard = (req, res) => {
     .then(card => res.send({data: card}))
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        res.status(404).send({ message: 'Такой карточки нет' });
+        throw new NotFoundError ('Такой карточки нет');
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        throw new BadRequestError('Переданы некорректные данные');
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        throw new InternalError('Произошла ошибка');
       }
     });
 }
