@@ -8,24 +8,25 @@ const InternalError = require('../errors/internal-error');
 
 const JWT_SECRET = 'qwerty1234';
 
-module.exports.getUsers = (req, res) => {
-
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then(users => res.send({data: users}))
-    .catch(() => res.status(500).send({message: 'Произошла ошибка'}));
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   User.findById(req.params.userId)
-    .orFail(new Error('NotValidId'))
-    .then(user => res.send({data: user}))
-    .catch((err) => {
-      if (err.message === 'NotValidId') {
+    .then(user => {
+      if (!user) {
         throw new NotFoundError('Такого пользователя нет');
-      } else if (err.name === 'CastError') {
-        throw new BadRequestError('Переданы некорректные данные');
+      }
+      res.send({data: user});
+    })
+    .catch(err => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные'))
       } else {
-        throw new InternalError('Произошла ошибка');
+        next(err);
       }
     });
 }
@@ -34,7 +35,7 @@ module.exports.createUser = (req, res, next) => {
   console.log(req)
   const {name, about, avatar, email, password} = req.body;
   User.findOne({email})
-    .then((user) => {
+    .then(user => {
       if (user) {
         throw new ConflictError('Эти данные уже используются. Введите другой email');
       }
@@ -50,18 +51,18 @@ module.exports.createUser = (req, res, next) => {
           email: user.email,
           _id: user._id,
         }))
-        .catch((err) => {
+        .catch(err => {
           if (err.name === 'ValidationError') {
-            throw new BadRequestError('Переданы некорректные данные');
+            next(new BadRequestError('Переданы некорректные данные'));
           } else {
-            throw new InternalError('Произошла ошибка');
+            next(err);
           }
         });
-    })
+      })
     .catch(next);
 }
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const {name, about} = req.body;
   const _id = req.user._id;
   console.log(_id);
@@ -70,21 +71,23 @@ module.exports.updateUser = (req, res) => {
     {name, about},
     {new: true, runValidators: true}
   )
-    .orFail(new Error('NotValidId'))
-    .then((user) => res.send({data: user}))
-    .catch((err) => {
-      if (err.message === 'NotValidId') {
+    .then(user => {
+      if (!user) {
         throw new NotFoundError('Такого пользователя нет');
-      } else if (err.name === 'ValidationError') {
-        throw new BadRequestError('Переданы некорректные данные');
+      }
+      res.send({data: user});
+    })
+    .catch(err => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные'))
       } else {
-        throw new InternalError('Произошла ошибка');
+        next(err);
       }
     });
 }
 
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const {avatar} = req.body;
   const _id = req.user._id
   User.findByIdAndUpdate(
@@ -92,15 +95,17 @@ module.exports.updateAvatar = (req, res) => {
     {avatar},
     {new: true, runValidators: true},
   )
-    .orFail(new Error('NotValidId'))
-    .then((user) => res.send({data: user}))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError('Переданы некорректные данные');
-      } else if (err.message === 'NotValidId') {
+    .then(user => {
+      if (!user) {
         throw new NotFoundError('Такого пользователя нет');
+      }
+      res.send({data: user});
+    })
+    .catch(err => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные'))
       } else {
-        throw new InternalError('Произошла ошибка');
+        next(err);
       }
     });
 };
