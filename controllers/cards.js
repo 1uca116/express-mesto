@@ -6,7 +6,7 @@ const InternalError = require('../errors/internal-error');
 module.exports.getCards = (req, res) => {
   Card.find({})
     .then(cards => res.send({ data: cards }))
-    .catch(() => throw new InternalError('Произошла ошибка'));
+    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.getCard = (req, res) => {
