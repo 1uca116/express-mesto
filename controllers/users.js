@@ -39,26 +39,25 @@ module.exports.createUser = (req, res, next) => {
       if (user) {
         throw new ConflictError('Эти данные уже используются. Введите другой email');
       }
+      bcrypt.hash(password, 10)
+        .then((hash) => {
+          User.create({name, about, avatar, email, password: hash})
+            .then(user => {
+              if (!user) {
+                throw new BadRequestError('Переданы некорректные данные');
+              }
+              res.send({data: user});
+            })
+            .catch(err => {
+              if (err.name === 'ValidationError') {
+                next(new BadRequestError('Переданы некорректные данные'));
+              } else {
+                next(err);
+              }
+            });
+        })
+        .catch(next);
     })
-    .catch(next);
-  bcrypt.hash(password, 10)
-    .then((hash) => {
-      User.create({name, about, avatar, email, password: hash})
-        .then(user => res.send({
-          name: user.name,
-          about: user.about,
-          avatar: user.avatar,
-          email: user.email,
-          _id: user._id,
-        }))
-        .catch(err => {
-          if (err.name === 'ValidationError') {
-            next(new BadRequestError('Переданы некорректные данные'));
-          } else {
-            next(err);
-          }
-        });
-      })
     .catch(next);
 }
 

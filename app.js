@@ -45,7 +45,7 @@ app.use('/cards', auth, cardsRouter)
 app.use((err, req, res, next) => {
   // если у ошибки нет статуса, выставляем 500
   const { statusCode = 500, message } = err;
-
+console.log(message)
   res
     .status(statusCode)
     .send({
