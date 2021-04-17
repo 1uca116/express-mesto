@@ -42,7 +42,18 @@ app.post('/signin', celebrate({
 app.use('/users', auth, usersRouter )
 app.use('/cards', auth, cardsRouter)
 
-app.use((err, req, res, next) => {
+//Handling 404
+app.use(function(req, res) {
+  res.status(404).render('404');
+});
+
+
+// Handling 500
+app.use(function(error, req, res, next) {
+  res.status(500).render('500');
+});
+
+app.use((err, req, res) => {
   // если у ошибки нет статуса, выставляем 500
   const { statusCode = 500, message } = err;
 console.log(message)
