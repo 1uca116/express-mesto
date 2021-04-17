@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 const ConflictError = require('../errors/conflict-error');
 const NotFoundError = require('../errors/not-found-error');
 const BadRequestError = require('../errors/bad-request-error');
-const InternalError = require('../errors/internal-error');
 
 const JWT_SECRET = 'qwerty1234';
 
