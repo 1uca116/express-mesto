@@ -45,7 +45,13 @@ module.exports.createUser = (req, res, next) => {
               if (!user) {
                 throw new BadRequestError('Переданы некорректные данные');
               }
-              res.send({data: user});
+              res.send({data: {
+                  _id: user._id,
+                  name: user.name,
+                  about: user.about,
+                  avatar: user.avatar,
+                  email: user.email,
+                }});
             })
             .catch(err => {
               if (err.name === 'ValidationError') {
@@ -110,7 +116,7 @@ module.exports.updateAvatar = (req, res, next) => {
 
 module.exports.login = (req, res) => {
   const {email, password} = req.body;
-  return User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email)
     .then((matched) => {
       const token = jwt.sign({_id: matched._id}, JWT_SECRET, {expiresIn: '7d'});
       if (!matched) {
@@ -121,7 +127,6 @@ module.exports.login = (req, res) => {
         httpOnly: true,
         sameSite: true
       })
-
         .status(200).send({token})
     })
     .catch((err) => {

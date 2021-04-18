@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards');
+const errorRoutes = require('./routes/error-router');
 const { celebrate, Joi } = require('celebrate');
 
 const { login, createUser } = require('./controllers/users');
@@ -41,17 +42,7 @@ app.post('/signin', celebrate({
 
 app.use('/users', auth, usersRouter )
 app.use('/cards', auth, cardsRouter)
-
-//Handling 404
-app.use(function(req, res) {
-  res.status(404).render('404');
-});
-
-
-// Handling 500
-app.use(function(error, req, res, next) {
-  res.status(500).render('500');
-});
+app.use('/', errorRoutes);
 
 app.use((err, req, res) => {
   // если у ошибки нет статуса, выставляем 500
@@ -66,6 +57,10 @@ console.log(message)
         : message
     });
 });
+
+// app.get('*', function(req, res){
+//   res.status(404).send('Страница не найдена');
+// });
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`)
