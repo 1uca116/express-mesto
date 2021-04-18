@@ -1,9 +1,9 @@
+/* eslint-disable no-unused-vars */
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards');
-const errorRoutes = require('./routes/error-router');
 const { celebrate, Joi } = require('celebrate');
 
 const { login, createUser } = require('./controllers/users');
@@ -42,9 +42,8 @@ app.post('/signin', celebrate({
 
 app.use('/users', auth, usersRouter )
 app.use('/cards', auth, cardsRouter)
-app.use('/', errorRoutes);
 
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   // если у ошибки нет статуса, выставляем 500
   const { statusCode = 500, message } = err;
 console.log(message)
@@ -58,9 +57,9 @@ console.log(message)
     });
 });
 
-// app.get('*', function(req, res){
-//   res.status(404).send('Страница не найдена');
-// });
+app.all('*', function(req, res){
+  res.status(404).send('Страница не найдена');
+});
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`)
