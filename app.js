@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards');
+const NotFoundError = require('./errors/not-found-error');
+
 const { celebrate, Joi } = require('celebrate');
 
 const { login, createUser } = require('./controllers/users');
@@ -43,6 +45,11 @@ app.post('/signin', celebrate({
 app.use('/users', auth, usersRouter )
 app.use('/cards', auth, cardsRouter)
 
+app.all('*', (req, res) => {
+  throw new NotFoundError('Запрашиваемая страница не найдена');
+});
+
+
 app.use((err, req, res, next) => {
   // если у ошибки нет статуса, выставляем 500
   const { statusCode = 500, message } = err;
@@ -55,10 +62,6 @@ console.log(message)
         ? 'На сервере произошла ошибка'
         : message
     });
-});
-
-app.all('*', function(req, res){
-  res.status(404).send ({message: 'Запрашиваемая страница не найдена'});
 });
 
 app.listen(PORT, () => {
